@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Unit Converter | Modern Blue Edition</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: all 0.2s ease-in-out;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, 'Segoe UI', 'Poppins', 'Arial', sans-serif;
+      background: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* main card container */
+    .converter-card {
+      max-width: 700px;
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 24px;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+      padding: 1.8rem 2rem 2rem 2rem;
+      border: 1px solid #E2E8F0;
+      transition: background 0.2s, border 0.2s;
+    }
+
+    /* dark mode override (dynamic) */
+    body.dark-mode {
+      background: #0F172A;
+    }
+    body.dark-mode .converter-card {
+      background: #1E293B;
+      border-color: #334155;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+    }
+    body.dark-mode .result-box {
+      background: #0F172A;
+      border-color: #334155;
+    }
+    body.dark-mode .unit-select, 
+    body.dark-mode .number-input {
+      background: #0F172A;
+      border-color: #475569;
+      color: #F1F5F9;
+    }
+    body.dark-mode .label-text {
+      color: #CBD5E1;
+    }
+    body.dark-mode .history-item {
+      background: #0F172A;
+      border-color: #334155;
+      color: #E2E8F0;
+    }
+    body.dark-mode .history-clear-btn {
+      background: #334155;
+      color: #F1F5F9;
+    }
+
+    /* header section */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 1.8rem;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #2563EB, #1E293B);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+    body.dark-mode h1 {
+      background: linear-gradient(135deg, #60A5FA, #94A3B8);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+    .dark-toggle {
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      border-radius: 40px;
+      padding: 0.45rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1E293B;
+      transition: 0.2s;
+    }
+    .dark-toggle:hover {
+      background: #E2E8F0;
+      transform: scale(0.97);
+    }
+    body.dark-mode .dark-toggle {
+      background: #334155;
+      border-color: #475569;
+      color: #F1F5F9;
+    }
+
+    /* input groups */
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    .label-text {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #334155;
+      letter-spacing: 0.3px;
+    }
+    .number-input, .unit-select {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      font-size: 1rem;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 14px;
+      background: #FFFFFF;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .number-input:focus, .unit-select:focus {
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+    .dual-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .dual-row .input-group {
+      flex: 1;
+    }
+
+    /* action buttons row */
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0 1.8rem 0;
+      flex-wrap: wrap;
+    }
+    .btn {
+      flex: 1;
+      padding: 0.85rem 0;
+      border: none;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: #2563EB;
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+    .btn-primary:hover {
+      background: #1D4ED8;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    }
+    .btn-secondary {
+      background: #F1F5F9;
+      color: #1E293B;
+      border: 1px solid #E2E8F0;
+    }
+    .btn-secondary:hover {
+      background: #E2E8F0;
+      transform: translateY(-2px);
+    }
+    body.dark-mode .btn-secondary {
+      background: #334155;
+      color: #F1F5F9;
+      border-color: #475569;
+    }
+
+    /* result area */
+    .result-area {
+      background: #F8FAFC;
+      border-radius: 20px;
+      padding: 1.2rem 1.2rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #E2E8F0;
+    }
+    .result-box {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border: 1px solid #E2E8F0;
+    }
+    .result-value {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #16A34A;
+      word-break: break-word;
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #64748B;
+      padding: 8px 12px;
+      border-radius: 40px;
+      transition: 0.2s;
+    }
+    .copy-btn:hover {
+      background: #E2E8F0;
+      color: #2563EB;
+    }
+    .error-message {
+      color: #DC2626;
+      font-size: 0.85rem;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    /* history panel */
+    .history-section {
+      margin-top: 1rem;
+      border-top: 1px solid #E2E8F0;
+      padding-top: 1rem;
+    }
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .history-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #475569;
+    }
+    .history-clear-btn {
+      background: #F1F5F9;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .history-list {
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-item {
+      background: #F8FAFC;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid #E2E8F0;
+      font-family: monospace;
+    }
+    .history-value {
+      font-weight: 500;
+      color: #2563EB;
+    }
+
+    /* responsive */
+    @media (max-width: 560px) {
+      .converter-card {
+        padding: 1.2rem;
+      }
+      .dual-row {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .action-buttons {
+        flex-direction: column;
+      }
+      .result-value {
+        font-size: 1.3rem;
+      }
+    }
+    @media (min-width: 700px) {
+      .converter-card {
+        margin: 2rem auto;
+      }
+    }
+    .animated-result {
+      animation: gentlePop 0.25s ease-out;
+    }
+    @keyframes gentlePop {
+      0% { transform: scale(0.98); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+<div class="converter-card" id="appContainer">
+  <div class="header">
+    <h1>📐 Unit Converter</h1>
+    <button class="dark-toggle" id="darkModeToggleBtn">🌙 Dark Mode</button>
+  </div>
+
+  <!-- Input Section -->
+  <div class="input-group">
+    <label class="label-text">🔢 Enter value</label>
+    <input type="number" id="inputValue" class="number-input" placeholder="e.g., 100" value="1" step="any">
+  </div>
+
+  <div class="dual-row">
+    <div class="input-group">
+      <label class="label-text">📤 From Unit</label>
+      <select id="fromUnit" class="unit-select"></select>
+    </div>
+    <div class="input-group">
+      <label class="label-text">📥 To Unit</label>
+      <select id="toUnit" class="unit-select"></select>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button class="btn btn-primary" id="convertBtn">🔄 Convert</button>
+    <button class="btn btn-secondary" id="swapBtn">↔ Swap Units</button>
+  </div>
+
+  <!-- Output Section -->
+  <div class="result-area">
+    <div class="result-box" id="resultBox">
+      <span class="result-value" id="resultDisplay">—</span>
+      <button class="copy-btn" id="copyResultBtn" title="Copy result">📋 Copy</button>
+    </div>
+    <div id="errorMsg" class="error-message"></div>
+  </div>
+
+  <!-- History (optional advanced feature) -->
+  <div class="history-section">
+    <div class="history-header">
+      <span class="history-title">📜 Conversion History</span>
+      <button id="clearHistoryBtn" class="history-clear-btn">Clear all</button>
+    </div>
+    <div id="historyList" class="history-list">
+      <div style="color:#94A3B8; text-align:center; font-size:0.75rem;">No conversions yet</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- UNIT DEFINITIONS ----------
+  const unitCategories = {
+    length: {
+      name: "Length",
+      units: {
+        km: { label: "Kilometer (km)", toBase: (val) => val * 1000, fromBase: (val) => val / 1000 },
+        m: { label: "Meter (m)", toBase: (val) => val, fromBase: (val) => val },
+        miles: { label: "Miles (mi)", toBase: (val) => val * 1609.344, fromBase: (val) => val / 1609.344 }
+      }
+    },
+    weight: {
+      name: "Weight",
+      units: {
+        kg: { label: "Kilogram (kg)", toBase: (val) => val, fromBase: (val) => val },
+        g: { label: "Gram (g)", toBase: (val) => val / 1000, fromBase: (val) => val * 1000 },
+        lb: { label: "Pound (lb)", toBase: (val) => val * 0.45359237, fromBase: (val) => val / 0.45359237 }
+      }
+    },
+    temperature: {
+      name: "Temperature",
+      units: {
+        celsius: { label: "Celsius (°C)", toBase: (val) => val, fromBase: (val) => val },
+        fahrenheit: { label: "Fahrenheit (°F)", toBase: (val) => (val - 32) * 5/9, fromBase: (val) => (val * 9/5) + 32 },
+        kelvin: { label: "Kelvin (K)", toBase: (val) => val - 273.15, fromBase: (val) => val + 273.15 }
+      }
+    },
+    volume: {
+      name: "Volume",
+      units: {
+        liter: { label: "Liter (L)", toBase: (val) => val, fromBase: (val) => val },
+        milliliter: { label: "Milliliter (mL)", toBase: (val) => val / 1000, fromBase: (val) => val * 1000 }
+      }
+    }
+  };
+
+  // Flatten all units with category context
+  let allUnits = [];
+  for (let cat in unitCategories) {
+    const unitsObj = unitCategories[cat].units;
+    for (let unitKey in unitsObj) {
+      allUnits.push({
+        key: unitKey,
+        category: cat,
+        label: unitsObj[unitKey].label,
+        toBase: unitsObj[unitKey].toBase,
+        fromBase: unitsObj[unitKey].fromBase
+      });
+    }
+  }
+
+  // DOM elements
+  const fromSelect = document.getElementById('fromUnit');
+  const toSelect = document.getElementById('toUnit');
+  const inputValueEl = document.getElementById('inputValue');
+  const convertBtn = document.getElementById('convertBtn');
+  const swapBtn = document.getElementById('swapBtn');
+  const resultDisplaySpan = document.getElementById('resultDisplay');
+  const errorMsgDiv = document.getElementById('errorMsg');
+  const copyBtn = document.getElementById('copyResultBtn');
+  const darkToggle = document.getElementById('darkModeToggleBtn');
+  const historyContainer = document.getElementById('historyList');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+  // ----- HISTORY MANAGEMENT (localStorage) -----
+  let conversionHistory = [];
+
+  function loadHistoryFromStorage() {
+    const stored = localStorage.getItem('unitConverterHistory');
+    if (stored) {
+      try {
+        conversionHistory = JSON.parse(stored);
+        if (!Array.isArray(conversionHistory)) conversionHistory = [];
+      } catch(e) { conversionHistory = []; }
+    } else {
+      conversionHistory = [];
+    }
+    renderHistory();
+  }
+  function saveHistoryToStorage() {
+    localStorage.setItem('unitConverterHistory', JSON.stringify(conversionHistory.slice(0, 20)));
+  }
+  function addHistoryEntry(value, fromUnitLabel, toUnitLabel, result, formattedResult) {
+    const entry = {
+      id: Date.now(),
+      timestamp: new Date().toLocaleTimeString(),
+      query: `${value} ${fromUnitLabel} → ${toUnitLabel}`,
+      result: formattedResult
+    };
+    conversionHistory.unshift(entry);
+    if (conversionHistory.length > 15) conversionHistory.pop();
+    saveHistoryToStorage();
+    renderHistory();
+  }
+  function clearHistory() {
+    conversionHistory = [];
+    saveHistoryToStorage();
+    renderHistory();
+  }
+  function renderHistory() {
+    if (!historyContainer) return;
+    if (conversionHistory.length === 0) {
+      historyContainer.innerHTML = `<div style="color:#94A3B8; text-align:center; font-size:0.75rem;">✨ No conversions yet</div>`;
+      return;
+    }
+    historyContainer.innerHTML = conversionHistory.map(entry => `
+      <div class="history-item">
+        <span>${entry.query}</span>
+        <span class="history-value">${entry.result}</span>
+      </div>
+    `).join('');
+  }
+
+  // populate dropdowns
+  function populateDropdowns() {
+    fromSelect.innerHTML = '';
+    toSelect.innerHTML = '';
+    allUnits.forEach(unit => {
+      const option1 = document.createElement('option');
+      option1.value = unit.key;
+      option1.textContent = `${unit.label} (${unit.category})`;
+      fromSelect.appendChild(option1);
+      
+      const option2 = document.createElement('option');
+      option2.value = unit.key;
+      option2.textContent = `${unit.label} (${unit.category})`;
+      toSelect.appendChild(option2);
+    });
+    // set defaults: kg to g
+    fromSelect.value = 'kg';
+    toSelect.value = 'g';
+  }
+
+  // get unit object by key
+  function getUnitByKey(key) {
+    return allUnits.find(u => u.key === key);
+  }
+
+  // core conversion logic: value, fromUnitObj, toUnitObj
+  function performConversion(value, fromUnitObj, toUnitObj) {
+    if (isNaN(value) || value === null || value === '') return { error: "Please enter a valid number" };
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return { error: "Invalid numeric input" };
+
+    // check category compatibility? Actually for unit converter we restrict cross-category conversion? Not needed per requirements but best practice:
+    if (fromUnitObj.category !== toUnitObj.category) {
+      return { error: `Cannot convert ${fromUnitObj.label} to ${toUnitObj.label}. Different measurement types.` };
+    }
+    
+    // special handling temperature? Our toBase/fromBase method handles celsius as base for temperature. Works perfectly.
+    // Convert to base unit (celsius for temp, kg for weight, meters for length, liters for volume)
+    let valueInBase = fromUnitObj.toBase(numValue);
+    let result = toUnitObj.fromBase(valueInBase);
+    // rounding to 6 decimals for cleanliness
+    result = parseFloat(result.toFixed(8));
+    // avoid negative zero
+    if (Math.abs(result) < 1e-10) result = 0;
+    return { success: true, result };
+  }
+
+  // main convert action
+  function convertHandler() {
+    errorMsgDiv.innerText = '';
+    const rawValue = inputValueEl.value.trim();
+    if (rawValue === "") {
+      errorMsgDiv.innerText = "❌ Please enter a numeric value";
+      resultDisplaySpan.innerText = "—";
+      return;
+    }
+    const valueNum = parseFloat(rawValue);
+    if (isNaN(valueNum)) {
+      errorMsgDiv.innerText = "❌ Invalid number. Use digits like 10.5";
+      resultDisplaySpan.innerText = "—";
+      return;
+    }
+    
+    const fromKey = fromSelect.value;
+    const toKey = toSelect.value;
+    const fromUnitObj = getUnitByKey(fromKey);
+    const toUnitObj = getUnitByKey(toKey);
+    if (!fromUnitObj || !toUnitObj) {
+      errorMsgDiv.innerText = "Unit selection error";
+      return;
+    }
+    
+    const conversionResult = performConversion(valueNum, fromUnitObj, toUnitObj);
+    if (conversionResult.error) {
+      errorMsgDiv.innerText = conversionResult.error;
+      resultDisplaySpan.innerText = "—";
+      return;
+    }
+    
+    const finalVal = conversionResult.result;
+    // format result nicely (trim trailing zeros)
+    let displayVal = finalVal.toLocaleString(undefined, { maximumFractionDigits: 6, minimumFractionDigits: 0 });
+    resultDisplaySpan.innerText = displayVal;
+    
+    // add animation
+    const resBox = document.getElementById('resultBox');
+    resBox.classList.add('animated-result');
+    setTimeout(() => resBox.classList.remove('animated-result'), 300);
+    
+    // Add to history
+    const fromLabel = fromUnitObj.label;
+    const toLabel = toUnitObj.label;
+    addHistoryEntry(valueNum, fromLabel, toLabel, finalVal, `${displayVal} ${toLabel.split('(')[0].trim()}`);
+  }
+  
+  // swap units
+  function swapUnits() {
+    const fromVal = fromSelect.value;
+    const toVal = toSelect.value;
+    fromSelect.value = toVal;
+    toSelect.value = fromVal;
+    // optional: auto convert after swap? nice UX
+    convertHandler();
+  }
+  
+  // copy result
+  function copyResultToClipboard() {
+    const resultText = resultDisplaySpan.innerText;
+    if (!resultText || resultText === "—") {
+      errorMsgDiv.innerText = "Nothing to copy! Perform a conversion first.";
+      setTimeout(() => {
+        if (errorMsgDiv.innerText === "Nothing to copy! Perform a conversion first.") errorMsgDiv.innerText = "";
+      }, 1800);
+      return;
+    }
+    navigator.clipboard.writeText(resultText).then(() => {
+      const original = copyBtn.innerHTML;
+      copyBtn.innerHTML = "✅ Copied!";
+      setTimeout(() => {
+        copyBtn.innerHTML = original;
+      }, 1200);
+      errorMsgDiv.innerText = "";
+    }).catch(() => {
+      errorMsgDiv.innerText = "Could not copy";
+    });
+  }
+  
+  // Dark mode toggle with localStorage
+  function initDarkMode() {
+    const savedTheme = localStorage.getItem('unitConverterTheme');
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+      darkToggle.innerHTML = "☀️ Light Mode";
+    } else {
+      document.body.classList.remove('dark-mode');
+      darkToggle.innerHTML = "🌙 Dark Mode";
+    }
+  }
+  function toggleDarkMode() {
+    if (document.body.classList.contains('dark-mode')) {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('unitConverterTheme', 'light');
+      darkToggle.innerHTML = "🌙 Dark Mode";
+    } else {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('unitConverterTheme', 'dark');
+      darkToggle.innerHTML = "☀️ Light Mode";
+    }
+  }
+  
+  // Real-time input validation + optional instant convert? but use convert button as primary.
+  // Additional: numeric validation on input blur
+  function validateInputOnBlur() {
+    let val = inputValueEl.value.trim();
+    if (val === "") return;
+    if (isNaN(parseFloat(val))) {
+      errorMsgDiv.innerText = "⚠️ Only numeric values allowed";
+    } else {
+      if (errorMsgDiv.innerText.includes("Only numeric")) errorMsgDiv.innerText = "";
+    }
+  }
+  
+  // set event listeners
+  function bindEvents() {
+    convertBtn.addEventListener('click', convertHandler);
+    swapBtn.addEventListener('click', swapUnits);
+    copyBtn.addEventListener('click', copyResultToClipboard);
+    darkToggle.addEventListener('click', toggleDarkMode);
+    clearHistoryBtn.addEventListener('click', () => {
+      clearHistory();
+      errorMsgDiv.innerText = "History cleared";
+      setTimeout(() => { if(errorMsgDiv.innerText === "History cleared") errorMsgDiv.innerText = ""; }, 1500);
+    });
+    inputValueEl.addEventListener('blur', validateInputOnBlur);
+    inputValueEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') convertHandler();
+    });
+  }
+  
+  // Additional onload initial conversion example: show kg->g for default value 1
+  function initialConvert() {
+    // set default: 1 kg to g
+    inputValueEl.value = "1";
+    fromSelect.value = "kg";
+    toSelect.value = "g";
+    convertHandler();
+  }
+  
+  // Initialize app
+  function init() {
+    populateDropdowns();
+    bindEvents();
+    initDarkMode();
+    loadHistoryFromStorage();
+    initialConvert();
+  }
+  
+  init();
+</script>
+</body>
+</html>
