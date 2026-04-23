@@ -22,7 +22,6 @@
       padding: 1.5rem;
     }
 
-    /* main card container */
     .converter-card {
       max-width: 700px;
       width: 100%;
@@ -113,7 +112,6 @@
       color: #F1F5F9;
     }
 
-    /* input groups */
     .input-group {
       margin-bottom: 1.5rem;
     }
@@ -148,8 +146,6 @@
     .dual-row .input-group {
       flex: 1;
     }
-
-    /* action buttons row */
     .action-buttons {
       display: flex;
       gap: 1rem;
@@ -196,7 +192,6 @@
       border-color: #475569;
     }
 
-    /* result area */
     .result-area {
       background: #F8FAFC;
       border-radius: 20px;
@@ -242,7 +237,6 @@
       font-weight: 500;
     }
 
-    /* history panel */
     .history-section {
       margin-top: 1rem;
       border-top: 1px solid #E2E8F0;
@@ -290,7 +284,7 @@
       color: #2563EB;
     }
 
-    /* responsive */
+
     @media (max-width: 560px) {
       .converter-card {
         padding: 1.2rem;
@@ -327,7 +321,6 @@
     <button class="dark-toggle" id="darkModeToggleBtn">🌙 Dark Mode</button>
   </div>
 
-  <!-- Input Section -->
   <div class="input-group">
     <label class="label-text">🔢 Enter value</label>
     <input type="number" id="inputValue" class="number-input" placeholder="e.g., 100" value="1" step="any">
@@ -349,7 +342,6 @@
     <button class="btn btn-secondary" id="swapBtn">↔ Swap Units</button>
   </div>
 
-  <!-- Output Section -->
   <div class="result-area">
     <div class="result-box" id="resultBox">
       <span class="result-value" id="resultDisplay">—</span>
@@ -358,7 +350,7 @@
     <div id="errorMsg" class="error-message"></div>
   </div>
 
-  <!-- History (optional advanced feature) -->
+
   <div class="history-section">
     <div class="history-header">
       <span class="history-title">📜 Conversion History</span>
@@ -371,7 +363,7 @@
 </div>
 
 <script>
-  // ---------- UNIT DEFINITIONS ----------
+
   const unitCategories = {
     length: {
       name: "Length",
@@ -406,7 +398,6 @@
     }
   };
 
-  // Flatten all units with category context
   let allUnits = [];
   for (let cat in unitCategories) {
     const unitsObj = unitCategories[cat].units;
@@ -421,7 +412,6 @@
     }
   }
 
-  // DOM elements
   const fromSelect = document.getElementById('fromUnit');
   const toSelect = document.getElementById('toUnit');
   const inputValueEl = document.getElementById('inputValue');
@@ -434,7 +424,6 @@
   const historyContainer = document.getElementById('historyList');
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
-  // ----- HISTORY MANAGEMENT (localStorage) -----
   let conversionHistory = [];
 
   function loadHistoryFromStorage() {
@@ -483,7 +472,6 @@
     `).join('');
   }
 
-  // populate dropdowns
   function populateDropdowns() {
     fromSelect.innerHTML = '';
     toSelect.innerHTML = '';
@@ -498,39 +486,35 @@
       option2.textContent = `${unit.label} (${unit.category})`;
       toSelect.appendChild(option2);
     });
-    // set defaults: kg to g
+ 
     fromSelect.value = 'kg';
     toSelect.value = 'g';
   }
 
-  // get unit object by key
   function getUnitByKey(key) {
     return allUnits.find(u => u.key === key);
   }
 
-  // core conversion logic: value, fromUnitObj, toUnitObj
+  
   function performConversion(value, fromUnitObj, toUnitObj) {
     if (isNaN(value) || value === null || value === '') return { error: "Please enter a valid number" };
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return { error: "Invalid numeric input" };
 
-    // check category compatibility? Actually for unit converter we restrict cross-category conversion? Not needed per requirements but best practice:
+   
     if (fromUnitObj.category !== toUnitObj.category) {
       return { error: `Cannot convert ${fromUnitObj.label} to ${toUnitObj.label}. Different measurement types.` };
     }
-    
-    // special handling temperature? Our toBase/fromBase method handles celsius as base for temperature. Works perfectly.
-    // Convert to base unit (celsius for temp, kg for weight, meters for length, liters for volume)
     let valueInBase = fromUnitObj.toBase(numValue);
     let result = toUnitObj.fromBase(valueInBase);
-    // rounding to 6 decimals for cleanliness
+
     result = parseFloat(result.toFixed(8));
-    // avoid negative zero
+
     if (Math.abs(result) < 1e-10) result = 0;
     return { success: true, result };
   }
 
-  // main convert action
+
   function convertHandler() {
     errorMsgDiv.innerText = '';
     const rawValue = inputValueEl.value.trim();
@@ -563,32 +547,26 @@
     }
     
     const finalVal = conversionResult.result;
-    // format result nicely (trim trailing zeros)
     let displayVal = finalVal.toLocaleString(undefined, { maximumFractionDigits: 6, minimumFractionDigits: 0 });
     resultDisplaySpan.innerText = displayVal;
     
-    // add animation
     const resBox = document.getElementById('resultBox');
     resBox.classList.add('animated-result');
     setTimeout(() => resBox.classList.remove('animated-result'), 300);
     
-    // Add to history
     const fromLabel = fromUnitObj.label;
     const toLabel = toUnitObj.label;
     addHistoryEntry(valueNum, fromLabel, toLabel, finalVal, `${displayVal} ${toLabel.split('(')[0].trim()}`);
   }
   
-  // swap units
   function swapUnits() {
     const fromVal = fromSelect.value;
     const toVal = toSelect.value;
     fromSelect.value = toVal;
     toSelect.value = fromVal;
-    // optional: auto convert after swap? nice UX
     convertHandler();
   }
   
-  // copy result
   function copyResultToClipboard() {
     const resultText = resultDisplaySpan.innerText;
     if (!resultText || resultText === "—") {
@@ -609,8 +587,7 @@
       errorMsgDiv.innerText = "Could not copy";
     });
   }
-  
-  // Dark mode toggle with localStorage
+
   function initDarkMode() {
     const savedTheme = localStorage.getItem('unitConverterTheme');
     if (savedTheme === 'dark') {
@@ -633,8 +610,6 @@
     }
   }
   
-  // Real-time input validation + optional instant convert? but use convert button as primary.
-  // Additional: numeric validation on input blur
   function validateInputOnBlur() {
     let val = inputValueEl.value.trim();
     if (val === "") return;
@@ -645,7 +620,6 @@
     }
   }
   
-  // set event listeners
   function bindEvents() {
     convertBtn.addEventListener('click', convertHandler);
     swapBtn.addEventListener('click', swapUnits);
@@ -661,17 +635,14 @@
       if (e.key === 'Enter') convertHandler();
     });
   }
-  
-  // Additional onload initial conversion example: show kg->g for default value 1
+
   function initialConvert() {
-    // set default: 1 kg to g
     inputValueEl.value = "1";
     fromSelect.value = "kg";
     toSelect.value = "g";
     convertHandler();
   }
   
-  // Initialize app
   function init() {
     populateDropdowns();
     bindEvents();
